@@ -1,0 +1,31 @@
+apiVersion: templates.gatekeeper.sh/v1beta1
+kind: ConstraintTemplate
+metadata:
+  name: grafanauniquedashboardid
+spec:
+  crd:
+    spec:
+      names:
+        kind: "GrafanaUniqueDashboardId"
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package grafanauniquedashboardid
+
+        violation[{"msg": msg}] {
+
+          input_ns := input.review.object.metadata.namespace
+          input_name := input.review.object.metadata.name
+          provided_id := json.unmarshal(input.review.object.data[_]).uid
+          
+          
+
+          some other_ns, other_name          
+          other_id :=  json.unmarshal(data.inventory.namespace[other_ns].v1.ConfigMap[other_name].data[_]).uid
+
+          [input_ns, input_name] != [other_ns, other_name]
+        
+          provided_id == other_id
+          
+          msg := sprintf("Must specify a unique dashboard id: %v", [provided_id])
+        }
